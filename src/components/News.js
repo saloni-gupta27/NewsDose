@@ -27,37 +27,34 @@ export default class News extends Component {
   }
 
   handleUpdate = async () => {
-    let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=d4e2084bb80d4537b92429f07dc347cc&page=${this.state.page}&pageSize=${this.props.pageSize}`;
+    this.props.setProgress(10)
+    let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=${this.props.apiKey}&page=${this.state.page}&pageSize=${this.props.pageSize}`;
     let res = await fetch(url);
+    this.props.setProgress(30)
     res = await res.json();
+    this.props.setProgress(70);
     this.setState({
       articles: res.articles,
       totalArticles: res.totalResults,
       loading: false,
     });
+    this.props.setProgress(100);
   };
 
-  handlePreviousClick = async () => {
-    this.setState({ page: this.state.page - 1, loading: true });
-    this.handleUpdate();
-  };
 
-  handleNextClick = async () => {
-    this.setState({ page: this.state.page + 1, loading: true });
-    this.handleUpdate();
-  };
 
-//   fetchMoreData = async () => {
-//     this.setState({ page: this.state.page + 1 });
-//     let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=d4e2084bb80d4537b92429f07dc347cc&page=${this.state.page}&pageSize=${this.props.pageSize}`;
-//     let res = await fetch(url);
-//     res = await res.json();
-//     this.setState({
-//       articles: this.state.articles.concat(res.articles),
-//       totalArticles: res.totalResults,
-//       loading: false,
-//     });
-//   };
+  fetchMoreData = async () => {
+    
+    this.setState({ page: this.state.page + 1 });
+    let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=${this.props.apiKey}=${this.state.page}&pageSize=${this.props.pageSize}`;
+    let res = await fetch(url);
+    res = await res.json();
+    this.setState({
+      articles: this.state.articles.concat(res.articles),
+      totalArticles: res.totalResults,
+      loading: false,
+    });
+  };
 
   async componentDidMount() {
     this.handleUpdate();
@@ -67,21 +64,21 @@ export default class News extends Component {
     return (
       <>
         <h3 className="my-3">Top News Headlines</h3>
-        {this.state.loading && <Spinner/>}
-        {/* <InfiniteScroll
+        {/* {this.state.loading && <Spinner/>} */}
+        <InfiniteScroll
           dataLength={this.state.articles.length}
           next={this.fetchMoreData}
-          style={{ display: "flex", flexDirection: "column" }} //To put endMessage and loader to the top.
           hasMore={
             this.state.articles.length !== this.state.articles.totalArticles
           }
+        
           loader={this.state.loading && <Spinner/>}
-        >*/}
+        >
             <div className="container"> 
           <div className="row">
-            {!this.state.loading && this.state.articles.map((el) => {
+            {this.state.articles.map((el,index) => {
               return (
-                <div className="col-md-4 my-1" key={el.title}>
+                <div className="col-md-4 my-1" key={index}>
                   <NewsItem
                     title={el.title ? el.title.slice(0, 63) : "News"}
                     description={
@@ -100,26 +97,8 @@ export default class News extends Component {
             })}
           </div>
           </div>
-         {/* </InfiniteScroll> */}
-        <div className="container d-flex justify-content-between my-3">
-          <button
-            className="btn btn-dark"
-            onClick={this.handlePreviousClick}
-            disabled={this.state.page <= 1}
-          >
-            {" "}
-            &larr; Previous
-          </button>
-          <button
-            className="btn btn-dark"
-            onClick={this.handleNextClick}
-            disabled={
-              this.state.page + 1 > Math.ceil(this.state.totalArticles /this.props.pageSize)
-            }
-          >
-            Next &rarr;
-          </button>
-        </div>
+         </InfiniteScroll>
+       
       </>
     );
   }
